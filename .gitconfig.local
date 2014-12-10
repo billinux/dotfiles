@@ -1,0 +1,14 @@
+# Vim: set ft=gitconfig:
+#
+[user]
+  name = Bill Linux
+  email = b.linux@laposte.net
+
+[github]
+  user = billinux
+  token = token
+
+[sendmail]
+  smtpserver = smtp.laposte.net
+  smtpuser = b.linux@laposte.net
+  smtppass = password
