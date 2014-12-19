@@ -301,7 +301,7 @@ function! s:cache_bundles() "{{{
   NeoBundleLazy 'nathanaelkane/vim-indent-guides'
 ""  NeoBundleLazy 'ntpeters/vim-better-whitespace'
 
-  NeoBundleLazy 'lilydjwg/colorizer', { 'filetypes': ['html', 'haml', 'xhtml', 'liquid', 'css', 'less', 'scss', 'sass'] }
+  NeoBundleLazy 'ap/vim-css-color', { 'filetypes': ['html', 'haml', 'xhtml', 'liquid', 'css', 'less', 'scss', 'sass'] }
 
   NeoBundleLazy 'mattn/emmet-vim', {
     \ 'autoload': {
