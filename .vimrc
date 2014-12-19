@@ -301,6 +301,8 @@ function! s:cache_bundles() "{{{
   NeoBundleLazy 'nathanaelkane/vim-indent-guides'
 ""  NeoBundleLazy 'ntpeters/vim-better-whitespace'
 
+  NeoBundleLazy 'lilydjwg/colorizer', { 'filetypes': ['html', 'haml', 'xhtml', 'liquid', 'css', 'less', 'scss', 'sass'] }
+
   NeoBundleLazy 'mattn/emmet-vim', {
     \ 'autoload': {
     \     'function_prefix': 'emmet',
@@ -805,7 +807,8 @@ set viminfo^=%
 " Tabs"{{{
 " Useful mappings for managing tabs"{{{
 map <leader>tn :tabnew<CR>
-map <leader>tc :tabclose<CR>
+"map <leader>tc :tabclose<CR>
+map <leader>tf :tabclose<CR>
 map <leader>to :tabonly<CR>
 map <leader>tm :tabmove
 "}}}
