@@ -1,9 +1,3 @@
-
-
-
-
-
-
 " No audible bell
 set vb
 

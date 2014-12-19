@@ -1,4 +1,3 @@
-
 " INIT:"{{{
 
 " Skip initialization for vim-tiny/small
@@ -10,13 +9,13 @@ scriptencoding utf-8
 set nocompatible
 filetype off
 
-" Vimrc augroup
+" Vimrc augroup"{{{
 augroup MyVimrc
   au!
 
   au! BufWritePost $MYVIMRC nested source $MYVIMRC
 augroup END
-
+"}}}
 command! -nargs=* Autocmd autocmd MyVimrc <args>
 command! -nargs=* AutocmdFT autocmd MyVimrc Filetype <args>
 
@@ -24,13 +23,13 @@ command! -nargs=* AutocmdFT autocmd MyVimrc Filetype <args>
 AutocmdFT vim highlight def link myVimAutocmd vimAutoCmd
 AutocmdFT vim match myVimAutocmd /\<\(Autocmd\|AutocmdFT\)\>/
 
-" Mapleader
+" Mapleader"{{{
 let mapleader = ','
 let g:mapleader = ','
 let g:maplocalleader = 'm'
-
-
-" Variables
+"}}}
+" Environment"{{{
+" ------------
 let s:is_windows = has('win16') || has('win32') || has('win64')
 let s:is_cygwin = has('win32unix')
 let s:is_mac = !s:is_windows && !s:is_cygwin
@@ -49,7 +48,6 @@ let s:is_term_rxvt = &term =~ "rxvt*"
 let s:is_term_screen = &term =~ "screen*"
 let s:is_term_linux = &term =~ "linux"
 
-
 " TMUX
 if exists('$TMUX')
   set clipboard=
@@ -58,7 +56,23 @@ else
 endif
 
 let s:is_starting = has('vim_starting')
+"}}}
+" Encoding"{{{
+" For Windows
+if s:is_windows
+    if has('multi_byte')
+        set termencoding=cp850
+        setglobal fileencoding=utf-8
+        set fileencodings=ucs-bom,utf-8,utf-16le,cp1252,iso-8859-15
+    endif
 
+else
+" For Unix-like
+    set termencoding=utf-8
+    set fileencoding=utf-8
+    set fileformat=unix
+endif
+"}}}
 " Create directories"{{{
 function! s:create_dir(path)
   if !isdirectory(a:path)
@@ -74,7 +88,11 @@ function! SourceIfExist(path)
     endif
 endfunction
 "}}}
+" Variables"{{{
+" ---------
 
+" Vim config
+" ----------
 let $CACHE = expand('~/.cache')
 let $CACHE_VIM = expand($CACHE.'/vim/.cache')
 let s:neobundle_dir = expand('$CACHE/vim/neobundle')
@@ -84,6 +102,7 @@ let s:vim_dir = fnameescape(expand('~/.vim'))
 call s:create_dir(s:vim_dir)
 
 " Private
+" -------
 let s:private_dir = s:vim_dir . '/.private'
 call s:create_dir(s:private_dir)
 
@@ -101,20 +120,28 @@ call s:create_dir(s:swap_dir)
 call s:create_dir(s:tmp_dir)
 
 " My bundle
+" ---------
 let s:my_bundles_dir = s:vim_dir . '/bundle'
 call s:create_dir(s:my_bundles_dir)
 
 " Completion plugin
+" -----------------
 "let g:billinux_complete_plugin = [ 'neocomplete' ]
 let g:billinux_complete_plugin = [ 'neocomplcache' ]
 "let g:billinux_complete_plugin = [ 'youcompleteme' ]
 
+" Statusline
+" -----------
+let g:billinux_use_airline = 1
+"}}}
+" Initial message"{{{
+" ---------------
 augroup InitialMessage
   au!
 
   autocmd VimEnter * echo "EnJoy vimming!"
 augroup END
-
+"}}}
 "}}}
 
 " BUNDLES:"{{{
@@ -122,7 +149,7 @@ augroup END
 " Setup Neobundle "{{{
 if has('vim_starting')
   " Set runtimepath.
-  if s:is_windows 
+  if s:is_windows
     let &runtimepath = join([
           \ expand('~/.vim'),
           \ expand('$VIM/runtime'),
@@ -177,10 +204,16 @@ function! s:cache_bundles() "{{{
   " ------------
   NeoBundle 'fatih/molokai'
   NeoBundle 'chriskempson/base16-vim'
+  NeoBundle 'ajh17/Spacegray.vim.git'
 
   " Plugins
   " -------
-  NeoBundle 'bling/vim-airline'
+  if exists('g:billinux_use_airline')
+    NeoBundle 'bling/vim-airline'
+  else
+    NeoBundle 'itchyny/lightline.vim'
+    "NeoBundle 'Lokaltog/powerline', {'rtp': 'powerline/bindings/vim/'}
+  endif
   NeoBundle 'terryma/vim-multiple-cursors'
   NeoBundle 'Lokaltog/vim-easymotion'
   NeoBundle 'tpope/vim-endwise'
@@ -257,8 +290,8 @@ function! s:cache_bundles() "{{{
 
   " Colorschemes"{{{
   " ------------
-  NeoBundleLazy 'altercation/vim-colors-solarized'
   NeoBundleLazy 'flazz/vim-colorschemes'
+  NeoBundleLazy 'altercation/vim-colors-solarized'
 
   NeoBundleLazy 'guns/xterm-color-table.vim', { 'commands': 'XtermColorTable' }
 "}}}
@@ -266,6 +299,7 @@ function! s:cache_bundles() "{{{
   " -------
   NeoBundleLazy 'scrooloose/nerdtree', { 'commands': 'NERDTreeToggle'}
   NeoBundleLazy 'nathanaelkane/vim-indent-guides'
+""  NeoBundleLazy 'ntpeters/vim-better-whitespace'
 
   NeoBundleLazy 'mattn/emmet-vim', {
     \ 'autoload': {
@@ -293,7 +327,9 @@ function! s:cache_bundles() "{{{
   NeoBundleLazy 'plasticboy/vim-markdown', { 'filetypes': 'mkd' }
   NeoBundleLazy 'chase/vim-ansible-yaml', { 'filetypes': 'yaml' }
   NeoBundleLazy 'chrisbra/csv.vim', { 'filetypes': 'csv' }
+  NeoBundleLazy 'dbext.vim', { 'filetypes': 'sql' }
   NeoBundleLazy 'davidhalter/jedi-vim', { 'filetypes': 'python' }
+  "NeoBundlelazy 'klen/python-mode' , { 'filetypes': 'python' }
   NeoBundleLazy 'tpope/vim-rails', { 'filetypes': 'runby' }
   NeoBundleLazy 'vim-jp/cpp-vim', { 'filetypes': ['c', 'cpp'] }
   NeoBundleLazy 'octol/vim-cpp-enhanced-highlight', { 'filetypes': ['c', 'cpp'] }
@@ -610,44 +646,45 @@ endfunc
 nnoremap <leader>; :call NumberToggle()<cr>
 "}}}
 " backup, undo, swap, view"{{{
-set backup undofile noswapfile
-set backupdir=$CACHE_VIM/backup/
+set backup undofile undoreload=1000 noswapfile
+set backupskip=/tmp/*,/private/tmp/*
+set backupdir=$CACHE_VIM/backup//
 set directory=$CACHE_VIM/swap//
 set viminfo+=n$CACHE_VIM/viminfo   " +viminfo
 set undodir=$CACHE_VIM/undo//      " +persistent_undo
-set viewdir=$CACHE_VIM/view/
+set viewdir=$CACHE_VIM/view//
 "set spellfile=$CACHE_VIM/spell/en.utf-8.add
 "}}}
 " List"{{{
 set list
 if (&termencoding ==# 'utf-8' || &encoding ==# 'utf-8') && version >= 700
-  set listchars=tab:›\ 
+  set listchars=tab:›\
   set listchars+=eol:$
   set listchars+=trail:⋅
   set listchars+=extends:›
   set listchars+=precedes:‹
   set listchars+=nbsp:+
 
-  set fillchars=stl:\ 
-  set fillchars+=stlnc:\ 
+"  set fillchars=stl:\
+"  set fillchars+=stlnc:\
   set fillchars+=vert:\|
   set fillchars+=fold:\⋅
   set fillchars+=diff:-
 else
-  set listchars=tab:\ \ 
+  set listchars=tab:\ \
   set listchars+=eol:$
   set listchars+=trail:~
   set listchars+=extends:>
   set listchars+=precedes:<
   set listchars+=nbsp:+
 
-  set fillchars=stl:\ 
-  set fillchars+=stlnc:\ 
+"  set fillchars=stl:\
+"  set fillchars+=stlnc:\
   set fillchars+=vert:\|
   set fillchars+=fold:\-
   set fillchars+=diff:-
 endif
-set showbreak=↪\ 
+set showbreak=↪\
 
 "Invisible character colors
 highlight NonText guifg=#4a4a59
@@ -859,43 +896,35 @@ map <F6> :runtime! syntax/2html.vim
 " UI:"{{{
 " Common settings
 " ---------------
+set background=dark
 set t_Co=256
 
 if &t_Co < 256
-  colorscheme default
+  try
+    let base16colorspace=256  " Access colors present in 256 colorspace"
+    colorscheme base16-monokai
+  catch
+    colorscheme default
+  endtry
 elseif strftime("%H") >=  5 && strftime("%H") <=  17
-set background=light
-try
-  colorscheme solarized
-catch
-  colorscheme default
-endtry
-else
-set background=dark
-try
   colorscheme molokai
-catch
-  colorscheme default
-endtry
+else
+  colorscheme molokai
+  "colorscheme spacegray
 endif
-set background=dark
 
 " Environment
 " -----------
 if s:is_mac
-"  set guifont=Source\ Code\ Pro\ for\ Powerline:12
+  "set guifont=Source\ Code\ Pro\ for\ Powerline:15
   set guifont=Meslo\ LG\ S\ Regular\ for\ Powerline:h12
-"  set guifont=Menlo\ Regular\ for\ Powerline:h13
-
-"  set transparency=10
-"  set fuoptions=maxvert,maxhorz
+  "set guifont=DejaVu\ Sans\ Mono\ for\ Powerline:h12
+  "set guifont=Menlo\ Regular\ for\ Powerline:h12
 
 elseif s:is_unix
-  set guifont=DejaVu\ Sans\ Mono\ for\ Powerline:h11
+  set guifont=DejaVu\ Sans\ Mono\ for\ Powerline:h13
 elseif s:is_windows
-  set guifont=Source\ Code\ Pro\ for\ Powerline:12
   set guifont=Bistream\ Vera\ Sans\ Mono\ for\ Powerline:h12
-  set guifont=DejaVu\ Sans\ Mono\ for\ Powerline:h11,
   autocmd GUIEnter * simalt ~x
 endif
 
@@ -903,6 +932,11 @@ endif
 " ---
 if s:is_gui
 
+  set guioptions-=m
+  set guioptions-=l
+  set guioptions-=r
+  set guioptions-=R
+  set guioptions-=L
   set guioptions-=T
 
   if exists('s:settings.enable_gui_fullscreen')
@@ -913,6 +947,8 @@ if s:is_gui
   endif
 
   if s:is_gui_macvim
+    set transparency=10
+    set fuoptions+=maxvert,maxhorz
 
     " Swipe to move between bufers :D
     map <silent> <SwipeLeft> :bprev<CR>
@@ -941,7 +977,7 @@ if s:is_gui
     " OS X probably has ctags in a weird place
     let g:tagbar_ctags_bin='/usr/local/bin/ctags'
 
-  elseif s:is_gui_linux 
+  elseif s:is_gui_linux
 
     " Alt+n = new buffer
     map <silent> <A-n> :enew<CR>
@@ -1058,6 +1094,10 @@ augroup vimrcEx
   Autocmd CursorMoved,CursorMovedI,WinLeave * setlocal nocursorline
   Autocmd CursorHold,CursorHoldI,WinEnter * setlocal cursorline
 
+  " Delete trailing whitespace
+  " http://makandracards.com/makandra/11541-how-to-not-leave-trailing-whitespace-using-your-editor-or-git
+  Autocmd BufWritePre * :%s/\s\+$//e
+
   " *.md filetype
   Autocmd BufRead,BufNew,BufNewFile *.md,*.markdown,*.mkd setlocal ft=markdown
   " http://mattn.kaoriya.net/software/vim/20140523124903.htm
@@ -1136,7 +1176,7 @@ augroup vimrcEx
   AutocmdFT gitcommit setlocal nofoldenable spell
   AutocmdFT diff setlocal nofoldenable
 
-  " Display errors at the bottom of the screen, 
+  " Display errors at the bottom of the screen,
   Autocmd BufWritePost *.py call Pep8()
 
   " Automatically wrap at 72 characters and spell check git commit messages
@@ -1247,7 +1287,8 @@ nnoremap VaB vaBV
 " -----------------------------------------------------------------
 
 " Molokai"{{{
-
+let g:molokai_original = 1
+let g:rehash256 = 1
 "}}}
 " Base16-vim"{{{
 
@@ -1256,21 +1297,110 @@ nnoremap VaB vaBV
 " Plugins"{{{
 " -----------------------------------------------------------------
 
+if exists('g:billinux_use_airline')
 " Vim-Airline"{{{
-if !exists('g:airline_powerline_fonts')
-  let g:airline_powerline_fonts=1
-endif
+  if ! s:is_gui
+    let g:airline_theme = 'wombat'
+  endif
+  let g:airline_theme = 'badwolf'
 
-let g:airline_theme = 'badwolf'
-let g:airline_symbols = {}
-let g:airline_symbols.readonly = ''
-let g:airline_symbols.paste = 'ρ'
-"let g:airline#extensions#hunks#hunk_symbols = ['⊕ ', '⊙ ', '⊗ ']
-" Enable/disable showing a summary of changed hunks under source control
-let g:airline#extensions#hunks#enabled = 1
-let g:airline#extensions#tabline#enabled = 1
-let g:airline#extensions#ctrlp#color_template = 'normal'
+  if !exists('g:airline_symbols')
+    let g:airline_symbols = {}
+  endif
+
+  " unicode symbols
+  if !exists('g:airline_powerline_fonts')
+    let g:airline_powerline_fonts=1
+  else
+    let g:airline_symbols.readonly = ''
+    let g:airline_symbols.paste = 'ρ'
+    let g:airline_left_sep          =  '⮀'
+    let g:airline_left_alt_sep      =  '⮁'
+    let g:airline_right_sep         =  '⮂'
+    let g:airline_right_alt_sep     =  '⮃'
+    let g:airline_symbols.linenr = '␊'
+    let g:airline_symbols.linenr = '⭡'
+    let g:airline_symbols.branch     =  '⭠'
+  endif
+
+  " Display open buffers in tabline
+  let g:airline#extensions#tabline#enabled = 1
+  let g:airline#extensions#branch#enabled = 1
+  let g:airline#extensions#syntastic#enabled = 1
+  let g:airline#extensions#tagbar#enabled = 1
+  let g:airline#extensions#csv#enabled = 1
+  let g:airline#extensions#hunks#enabled = 1
+  let g:airline#extensions#whitespace#enabled = 1
+  let g:airline#extensions#whitespace#symbol = '!'
+
+  " Enable powerline fonts
+  let g:airline_powerline_fonts=1
 "}}}
+else
+" Lightline.vim"{{{
+  let g:lightline = {
+    \ 'colorscheme': 'wombat',
+    \ 'mode_map': { 'c': 'NORMAL' },
+    \ 'active': {
+    \   'left': [ [ 'mode', 'paste' ], [ 'fugitive', 'filename' ] ]
+    \ },
+    \ 'component_function': {
+    \   'modified': 'MyModified',
+    \   'readonly': 'MyReadonly',
+    \   'fugitive': 'MyFugitive',
+    \   'filename': 'MyFilename',
+    \   'fileformat': 'MyFileformat',
+    \   'filetype': 'MyFiletype',
+    \   'fileencoding': 'MyFileencoding',
+    \   'mode': 'MyMode',
+    \ },
+    \ 'separator': { 'left': '⮀', 'right': '⮂' },
+    \ 'subseparator': { 'left': '⮁', 'right': '⮃' }
+    \ }
+
+  function! MyModified()
+    return &ft =~ 'help\|vimfiler\|gundo' ? '' : &modified ? '+' : &modifiable ? '' : '-'
+  endfunction
+
+  function! MyReadonly()
+    return &ft !~? 'help\|vimfiler\|gundo' && &readonly ? '⭤' : ''
+  endfunction
+
+  function! MyFilename()
+    return ('' != MyReadonly() ? MyReadonly() . ' ' : '') .
+      \ (&ft == 'vimfiler' ? vimfiler#get_status_string() :
+      \  &ft == 'unite' ? unite#get_status_string() :
+      \  &ft == 'vimshell' ? vimshell#get_status_string() :
+      \ '' != expand('%:t') ? expand('%:t') : '[No Name]') .
+      \ ('' != MyModified() ? ' ' . MyModified() : '')
+  endfunction
+
+  function! MyFugitive()
+    if &ft !~? 'vimfiler\|gundo' && exists("*fugitive#head")
+      let _ = fugitive#head()
+      return strlen(_) ? '⭠ '._ : ''
+    endif
+    return ''
+  endfunction
+
+  function! MyFileformat()
+    return winwidth(0) > 70 ? &fileformat : ''
+  endfunction
+
+  function! MyFiletype()
+    return winwidth(0) > 70 ? (strlen(&filetype) ? &filetype : 'no ft') : ''
+  endfunction
+
+  function! MyFileencoding()
+    return winwidth(0) > 70 ? (strlen(&fenc) ? &fenc : &enc) : ''
+  endfunction
+
+  function! MyMode()
+    return winwidth(0) > 60 ? lightline#mode() : ''
+  endfunction
+
+"}}}
+endif
 " Vim-multiple-cursors"{{{
 let g:multi_cursor_use_next_key = '<C-d>'
 let g:multi_cursor_exit_from_visual_mode = 0
@@ -1592,7 +1722,7 @@ if count(g:billinux_complete_plugin, 'neocomplete') ||
   let g:neosnippet#snippets_directory=s:neobundle_dir.'/vim-snippets/snippets'
 
   " Enable neosnippet snipmate compatibility mode
-  let g:neosnippet#enable_snipmate_compatibility = 1 
+  let g:neosnippet#enable_snipmate_compatibility = 1
 
   imap <expr><C-l> neosnippet#expandable() \|\| neosnippet#jumpable() ?
               \ "\<Plug>(neosnippet_jump_or_expand)" :
@@ -1629,7 +1759,20 @@ endif
 " -----------------------------------------------------------------
 
 " Vim-colors-solarized"{{{
+if exists('g:colors_name') && g:colors_name == 'solarized'
+  " Text is unreadable with background transparency.
+  if has('gui_macvim')
+    set transparency=0
+  endif
 
+  " Highlighted text is unreadable in Terminal.app because it
+  " does not support setting of the cursor foreground color.
+  if !has('gui_running') && $TERM_PROGRAM == 'Apple_Terminal'
+    if &background == 'dark'
+     hi Visual term=reverse cterm=reverse ctermfg=10 ctermbg=7
+    endif
+  endif
+endif
 "}}}
 " Vim-colorschemes"{{{
 
@@ -1647,6 +1790,16 @@ endif
 
 "}}}
 " Vim-indent-guides"{{{
+" Auto calculate guide colors.
+let g:indent_guides_auto_colors = 1
+
+" Use skinny guides.
+let g:indent_guides_guide_size = 1
+
+" Indent from level 2.
+let g:indent_guides_start_level = 2
+"}}}
+" Vim-better-whitespace"{{{
 
 "}}}
 " Emmet-vim "{{{
@@ -1691,6 +1844,18 @@ nnoremap <silent> <leader>l :TagbarToggle<CR>
 
 "}}}
 " Csv.vim"{{{
+
+"}}}
+" Dbext.vim"{{{
+" https://mutelight.org/dbext-the-last-sql-client-youll-ever-need
+" MySQL
+"let g:dbext_default_profile_mysql_local = 'type=MYSQL:user=root:passwd=whatever:dbname=mysql'
+
+" SQLite
+"let g:dbext_default_profile_sqlite_for_rails = 'type=SQLITE:dbname=/path/to/my/sqlite.db'
+
+" Microsoft SQL Server
+"let g:dbext_default_profile_microsoft_production = 'type=SQLSRV:user=sa:passwd=whatever:host=localhost'
 
 "}}}
 " Jedi-vim"{{{
@@ -1928,6 +2093,9 @@ let g:session_menu = 0
 if filereadable($HOME . "/.vimrc.local")
   source ~/.vimrc.local
 endif
+
+NeoBundleClearCache
+
 "}}}
 
 
