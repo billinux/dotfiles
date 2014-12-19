@@ -280,6 +280,10 @@ function! s:cache_bundles() "{{{
 
   NeoBundleLazy 'guns/xterm-color-table.vim', { 'commands': 'XtermColorTable' }
 "}}}
+" Powerline fonts"{{{
+  " Run install.sh
+  NeoBundleLazy 'powerline/fonts'
+"}}}
   " Plugins"{{{
   " -------
   NeoBundleLazy 'scrooloose/nerdtree', { 'commands': 'NERDTreeToggle'}
@@ -591,6 +595,7 @@ set showcmd
 set scrolloff=5
 
 " best vim-airline display
+set ambiwidth=double
 set noshowmode
 set lazyredraw
 
