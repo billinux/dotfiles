@@ -95,8 +95,7 @@ endfunction
 " ----------
 let $CACHE = expand('~/.cache')
 let $CACHE_VIM = expand($CACHE.'/vim/.cache')
-let s:neobundle_dir = expand('$CACHE/vim/neobundle')
-call s:create_dir(s:neobundle_dir)
+let $VIM_BUNDLE = expand($CACHE.'/vim/neobundle')
 
 let s:vim_dir = fnameescape(expand('~/.vim'))
 call s:create_dir(s:vim_dir)
@@ -147,41 +146,27 @@ augroup END
 " BUNDLES:"{{{
 
 " Setup Neobundle "{{{
-if has('vim_starting')
-  " Set runtimepath.
-  if s:is_windows
-    let &runtimepath = join([
-          \ expand('~/.vim'),
-          \ expand('$VIM/runtime'),
-          \ expand('~/.vim/after')], ',')
-  endif
-
-  " Load neobundle.
-  if isdirectory('neobundle.vim')
-    set runtimepath^=neobundle.vim
-  elseif finddir('neobundle.vim', '.;') != ''
-    execute 'set runtimepath^=' . finddir('neobundle.vim', '.;')
-  elseif &runtimepath !~ '/neobundle.vim'
-    if ! isdirectory(expand(s:neobundle_dir))
-      echon "Installing neobundle.vim..."
-      silent call s:create_dir(s:neobundle_dir)
-      execute printf('!git clone %s://github.com/Shougo/neobundle.vim.git',
-                \ (exists('$http_proxy') ? 'https' : 'git'))
-                \ s:neobundle_dir.'/neobundle.vim'
-      echo "done."
-      if v:shell_error
-        echoerr "neobundle.vim installation has failed!"
-        finish
-      endif
-    endif
-
-    execute 'set rtp+='.s:neobundle_dir.'/neobundle.vim'
-  endif
+if !exists('g:neobundleAlreadyExists')
+  let neobundleAlreadyExists=1
 endif
+let neobundle_readme=expand($VIM_BUNDLE).'/neobundle.vim/README.md'
+if !filereadable(neobundle_readme)
+echo "Installing NeoBundle..."
+echo ""
+if !isdirectory(expand('$VIM_BUNDLE'))
+call mkdir(expand('$VIM_BUNDLE'),'p')
+endif
+execute 'silent !git clone https://github.com/Shougo/neobundle.vim.git "' . expand('$VIM_BUNDLE/neobundle.vim') . '"'
+let neobundleAlreadyExists=0
+endif
+" Setting runtimepath for NeoBundle use
+set rtp+=$VIM_BUNDLE/neobundle.vim
+try
+call neobundle#begin('$VIM_BUNDLE')
+catch
+echohl Error | echo "NeoBundle is not installed. Run 'cd ~/.vim && git clone https://github.com/Shougo/neobundle.vim.git'" | echohl None
+endtry
 "}}}
-
-call neobundle#begin(expand(s:neobundle_dir))
-
 function! s:cache_bundles() "{{{
 
   " NeoBundle Management
@@ -254,7 +239,7 @@ function! s:cache_bundles() "{{{
     NeoBundle 'honza/vim-snippets'
 
     " Source support_function.vim to support vim-snippets.
-    call SourceIfExist(s:neobundle_dir.'/vim-snippets/snippets/support_functions.vim')
+    call SourceIfExist($VIM_BUNDLE.'/vim-snippets/snippets/support_functions.vim')
 
   endif
 
@@ -330,8 +315,8 @@ function! s:cache_bundles() "{{{
   NeoBundleLazy 'chase/vim-ansible-yaml', { 'filetypes': 'yaml' }
   NeoBundleLazy 'chrisbra/csv.vim', { 'filetypes': 'csv' }
   NeoBundleLazy 'dbext.vim', { 'filetypes': 'sql' }
-  NeoBundleLazy 'davidhalter/jedi-vim', { 'filetypes': 'python' }
-  "NeoBundlelazy 'klen/python-mode' , { 'filetypes': 'python' }
+  "NeoBundleLazy 'davidhalter/jedi-vim', { 'filetypes': 'python' }
+  NeoBundleLazy 'klen/python-mode' , { 'filetypes': 'python' }
   NeoBundleLazy 'tpope/vim-rails', { 'filetypes': 'runby' }
   NeoBundleLazy 'vim-jp/cpp-vim', { 'filetypes': ['c', 'cpp'] }
   NeoBundleLazy 'octol/vim-cpp-enhanced-highlight', { 'filetypes': ['c', 'cpp'] }
@@ -496,45 +481,28 @@ function! s:cache_bundles() "{{{
 
 endfunction "}}}
 
-" Neobundleloadcache"{{{
 if neobundle#has_cache()
-  NeoBundleLoadCache
+  :NeoBundleLoadCache
 else
   call s:cache_bundles()
-  NeoBundleSaveCache
+  :NeoBundleSaveCache
 endif
-"}}}
 
 call neobundle#end()
 
-filetype plugin indent on     " required!
+if neobundleAlreadyExists == 0
+  :NeoBundleInstall
+endif
+
+filetype plugin indent on
 syntax enable
 
 " Plugin installation check
-NeoBundleCheck"
+:NeoBundleCheck"
 
 " Required for clearing chache
 AutocmdFT BufWritePost .vimrc,.gvimrc,*vimrc,*gvimrc NeoBundleClearCache
 
-" NeoBundle search bundle name"{{{
-function! s:browse_neobundle_home(bundle_name)
-    if match(a:bundle_name, '/') == -1
-        let url = 'http://www.google.gp/search?q='.a:bundle_name
-    else
-        let url = 'https://github.com/'.a:bundle_name
-    endif
-    execute 'OpenBrowser' url
-endfunction
-command! -nargs=1 BrowseNeoBundleHome call <SID>browse_neobundle_home(<q-args>)
-"}}}
-" Neobundle maps"{{{
-nnoremap <silent><Leader>nbu :<C-u>NeoBundleUpdate<CR>
-nnoremap <silent><Leader>nbc :<C-u>NeoBundleClean<CR>
-nnoremap <silent><Leader>nbi :<C-u>NeoBundleInstall<CR>
-nnoremap <silent><Leader>nbl :<C-u>Unite output<CR>NeoBundleList<CR>
-nnoremap <silent><Leader>nbd :<C-u>NeoBundleDocs<CR>
-nnoremap <silent><Leader>nbh :<C-u>execute 'BrowseNeoBundleHome' matchstr(getline('.'), '\%[Neo]Bundle\%[Lazy]\s\+[''"]\zs.\+\ze[''"]')<CR>
-"}}}
 
 "}}}
 
@@ -1722,7 +1690,7 @@ if count(g:billinux_complete_plugin, 'neocomplete') ||
       \ count(g:billinux_complete_plugin, 'neocomplcache')
 
 " Use honza's snippets.
-  let g:neosnippet#snippets_directory=s:neobundle_dir.'/vim-snippets/snippets'
+  let g:neosnippet#snippets_directory=$VIM_BUNDLE.'/vim-snippets/snippets'
 
   " Enable neosnippet snipmate compatibility mode
   let g:neosnippet#enable_snipmate_compatibility = 1
@@ -1932,7 +1900,7 @@ let g:DisableAutoPHPFolding = 1  " Do not fold automatically
 
 "}}}
 " Pdv"{{{
-let g:pdv_template_dir = s:neobundle_dir.'/snippets/phpdoc'
+let g:pdv_template_dir = $VIM_BUNDLE.'/snippets/phpdoc'
 "}}}
 " PHP-Indenting-for-vim"{{{
 

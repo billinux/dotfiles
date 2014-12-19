@@ -81,6 +81,7 @@
   ba = branch -a
   bd = branch -d
   br = branch -r
+  bv = branch -v
   #############
   c = commit
   ca = commit -a
@@ -209,7 +210,7 @@
   merge-branch = !git checkout master && git merge @{-1}
   alias = !git config --list | grep alias
   ctags = "!sh -c '[ -f .git/hooks/ctags ] || git init; .git/hooks/ctags' git-ctags"
-  pr = !gh pull-request 
+  pr = !gh pull-request
   up = !git fetch origin && git rebase origin/master
   #############
   assume = update-index --assume-unchanged
